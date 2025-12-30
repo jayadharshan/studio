@@ -1,0 +1,2579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JD 3D Studio - Custom 3D Printing Services</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #6b7280;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: var(--white);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--white);
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Section */
+        .section {
+            padding: 3rem 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: var(--dark);
+        }
+
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .product-card {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 3rem;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero-image {
+            max-width: 600px;
+            width: 100%;
+            height: auto;
+            margin: 2rem auto;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .product-info {
+            padding: 1.5rem;
+        }
+
+        .product-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-price {
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .close-btn:hover {
+            color: var(--dark);
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* 3D Preview */
+        .preview-container {
+            width: 100%;
+            height: 400px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            background: #f3f4f6;
+            position: relative;
+        }
+
+        #preview-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Customization Controls */
+        .customization-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .price-display {
+            background: var(--light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .price-display .price {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* File Upload */
+        .file-upload {
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary);
+            background: #f0f4ff;
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .sidebar {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-menu a {
+            display: block;
+            padding: 0.75rem;
+            text-decoration: none;
+            color: var(--dark);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .dashboard-content {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Orders Table */
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .orders-table th,
+        .orders-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .orders-table th {
+            background: var(--light);
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-printing {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-shipped {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Features Section */
+        .features-section {
+            padding: 4rem 0;
+            background: var(--white);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: var(--light);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            padding: 3rem 0;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--white);
+        }
+
+
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        /* Gallery Section */
+        .gallery-section {
+            padding: 4rem 0;
+            background: var(--light);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            aspect-ratio: 1;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-item .gallery-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            color: white;
+            padding: 1rem;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+        }
+
+        .gallery-item:hover .gallery-overlay {
+            transform: translateY(0);
+        }
+
+        .admin-gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .admin-gallery-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .admin-gallery-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .admin-gallery-item .delete-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .contact-item a {
+            color: var(--white);
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        .contact-item a:hover {
+            opacity: 0.8;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: var(--white);
+            padding: 2rem 0;
+            text-align: center;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .footer-section a {
+            color: var(--gray);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: var(--white);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* Slideshow */
+        .slideshow-container {
+            position: relative;
+            max-width: 1200px;
+            margin: 2rem auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .slideshow-wrapper {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .slide.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .slide-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .slide-caption h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .slideshow-controls {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.3);
+            border: none;
+            color: white;
+            font-size: 2rem;
+            padding: 1rem;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+            z-index: 10;
+        }
+
+        .slideshow-controls:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        .prev-slide {
+            left: 1rem;
+        }
+
+        .next-slide {
+            right: 1rem;
+        }
+
+        .slideshow-dots {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            margin: 0 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .dot.active {
+            background: white;
+        }
+
+        /* Process Flow Chart */
+        .process-section {
+            padding: 4rem 0;
+            background: var(--white);
+        }
+
+        .process-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-top: 3rem;
+            position: relative;
+        }
+
+        .process-step {
+            flex: 1;
+            min-width: 200px;
+            max-width: 250px;
+            text-align: center;
+            position: relative;
+        }
+
+        .process-step::after {
+            content: '→';
+            position: absolute;
+            right: -2rem;
+            top: 50px;
+            font-size: 2rem;
+            color: var(--primary);
+            transform: translateY(-50%);
+        }
+
+        .process-step:last-child::after {
+            display: none;
+        }
+
+        .step-number {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0 auto 1rem;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .step-content {
+            background: var(--light);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .step-content:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .step-content h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .step-content ul {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+        }
+
+        .step-content ul li {
+            padding: 0.5rem 0;
+            color: var(--dark);
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .step-content ul li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .process-step::after {
+                display: none;
+            }
+
+            .process-flow {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .process-step {
+                max-width: 100%;
+            }
+
+            .slideshow-wrapper {
+                height: 300px;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .contact-info {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .contact-section {
+                padding: 1rem 0;
+            }
+
+            footer {
+                padding: 1rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">🖨️ JD 3D Studio</div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="showSection('home')">Home</a></li>
+                <li><a href="#" onclick="showSection('products')">Products</a></li>
+                <li><a href="#" onclick="showSection('upload')">Upload Design</a></li>
+                <li id="admin-link" class="hidden"><a href="#" onclick="showSection('admin')">Admin</a></li>
+            </ul>
+            <div class="user-actions">
+                <span id="user-name" class="hidden"></span>
+                <button id="login-btn" class="btn btn-outline" onclick="showModal('login-modal')">Login</button>
+                <button id="logout-btn" class="btn btn-danger hidden" onclick="logout()">Logout</button>
+                <button class="btn btn-primary" onclick="showSection('cart')">Cart (<span id="cart-count">0</span>)</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home-section">
+        <div class="container">
+            <h1>Custom 3D Printing Services</h1>
+            <p>Transform your ideas into reality with our premium 3D printing solutions</p>
+            
+            <!-- Slideshow Section -->
+            <div id="slideshow-section" style="margin: 2rem 0;">
+                <h2 class="section-title" style="color: white; margin-bottom: 1.5rem;">Our 3D Printing Showcase</h2>
+                <div class="slideshow-container">
+                    <div class="slideshow-wrapper">
+                        <div class="slide active">
+                            <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&h=500&fit=crop" alt="3D Printer">
+                            <div class="slide-caption">
+                                <h3>Bambu Lab A1 - Professional 3D Printing</h3>
+                                <p>State-of-the-art 3D printing technology</p>
+                            </div>
+                        </div>
+                        <div class="slide">
+                            <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=500&fit=crop" alt="3D Printed Miniature">
+                            <div class="slide-caption">
+                                <h3>Custom Miniatures</h3>
+                                <p>Detailed and precise 3D printed figurines</p>
+                            </div>
+                        </div>
+                        <div class="slide">
+                            <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=1200&h=500&fit=crop" alt="Jewelry Box">
+                            <div class="slide-caption">
+                                <h3>Premium Jewelry Boxes</h3>
+                                <p>Elegant and functional designs</p>
+                            </div>
+                        </div>
+                        <div class="slide">
+                            <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=1200&h=500&fit=crop" alt="Designer Vase">
+                            <div class="slide-caption">
+                                <h3>Designer Vases</h3>
+                                <p>Artistic and modern home decor</p>
+                            </div>
+                        </div>
+                        <div class="slide">
+                            <img src="https://images.unsplash.com/photo-1608889825205-eebdb9fc5806?w=1200&h=500&fit=crop" alt="Action Figure">
+                            <div class="slide-caption">
+                                <h3>Action Figures</h3>
+                                <p>High-quality collectible figures</p>
+                            </div>
+                        </div>
+                        <div class="slide">
+                            <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1200&h=500&fit=crop" alt="Phone Case">
+                            <div class="slide-caption">
+                                <h3>Custom Phone Cases</h3>
+                                <p>Personalized protection for your device</p>
+                            </div>
+                        </div>
+                        <button class="slideshow-controls prev-slide" onclick="changeSlide(-1)">‹</button>
+                        <button class="slideshow-controls next-slide" onclick="changeSlide(1)">›</button>
+                    </div>
+                    <div class="slideshow-dots" id="slideshow-dots"></div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="btn btn-primary" onclick="showSection('products')">Browse Products</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Flow Section -->
+    <section class="process-section" id="process-section">
+        <div class="container">
+            <h2 class="section-title">Our Customization Process</h2>
+            <p style="text-align: center; color: var(--gray); margin-bottom: 2rem;">A simple 4-step process to bring your ideas to life</p>
+            <div class="process-flow">
+                <div class="process-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Collect Details</h3>
+                        <ul>
+                            <li>Reference image</li>
+                            <li>Size specifications</li>
+                            <li>Material selection</li>
+                            <li>Client requirements</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>3D Model & Approval</h3>
+                        <ul>
+                            <li>Create 3D model</li>
+                            <li>Design visualization</li>
+                            <li>Client review</li>
+                            <li>Get approval</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Print & Final Approval</h3>
+                        <ul>
+                            <li>3D printing process</li>
+                            <li>Quality check</li>
+                            <li>Send finished image</li>
+                            <li>Final approval</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Delivery</h3>
+                        <ul>
+                            <li>Package product</li>
+                            <li>Shipping arrangement</li>
+                            <li>Track delivery</li>
+                            <li>Deliver to client</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section" id="features-section">
+        <div class="container">
+            <h2 class="section-title">Why Choose 3D Printing?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Futuristic Technology</h3>
+                    <p>Experience the future of manufacturing with cutting-edge 3D printing technology that brings your wildest ideas to life.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Rapid Prototyping</h3>
+                    <p>From concept to reality in hours, not weeks. Fast turnaround times for prototypes and custom designs.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Unlimited Customization</h3>
+                    <p>Create unique, personalized products tailored exactly to your specifications. No mass production limits.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌱</div>
+                    <h3>Eco-Friendly</h3>
+                    <p>Sustainable manufacturing with minimal waste. Print only what you need, when you need it.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💎</div>
+                    <h3>Premium Quality</h3>
+                    <p>High-resolution printing with professional-grade materials for durable, beautiful results.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔮</div>
+                    <h3>Future of Manufacturing</h3>
+                    <p>Join the revolution of additive manufacturing. The future is 3D printed, and it's here today.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="gallery-section" id="gallery-section">
+        <div class="container">
+            <h2 class="section-title">Our Work Gallery</h2>
+            <p style="text-align: center; color: var(--gray); margin-bottom: 2rem;">See what our customers are creating with JD 3D Studio</p>
+            <div class="gallery-grid" id="home-gallery"></div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section" id="contact-section" style="display: none;">
+        <div class="container">
+            <h2 class="section-title" style="color: white;">Get In Touch</h2>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <span style="font-size: 1.5rem;">📱</span>
+                    <a href="https://wa.me/917904857795" target="_blank">+91 7904857795</a>
+                </div>
+                <div class="contact-item">
+                    <span style="font-size: 1.5rem;">✉️</span>
+                    <a href="mailto:jayadharshan96@gmail.com">jayadharshan96@gmail.com</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>JD 3D Studio</h3>
+                    <p>Your trusted partner for custom 3D printing solutions. Bringing innovation to life, one layer at a time.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <a href="#" onclick="showSection('home')">Home</a>
+                    <a href="#" onclick="showSection('products')">Products</a>
+                    <a href="#" onclick="showSection('upload')">Upload Design</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact Us</h3>
+                    <a href="https://wa.me/917904857795" target="_blank">📱 WhatsApp: +91 7904857795</a>
+                    <a href="mailto:jayadharshan96@gmail.com">✉️ Email: jayadharshan96@gmail.com</a>
+                </div>
+                <div class="footer-section">
+                    <h3>Services</h3>
+                    <a href="#">Custom 3D Printing</a>
+                    <a href="#">Rapid Prototyping</a>
+                    <a href="#">Design Consultation</a>
+                    <a href="#">Bulk Orders</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 JD 3D Studio. All rights reserved. | Crafted with precision and passion.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Products Section -->
+    <section class="section" id="products-section" style="display: none;">
+        <div class="container">
+            <h2 class="section-title">Our Products</h2>
+            <div class="products-grid" id="products-grid"></div>
+        </div>
+    </section>
+
+    <!-- Upload Section -->
+    <section class="section" id="upload-section" style="display: none;">
+        <div class="container">
+            <h2 class="section-title">Upload Your 3D Design</h2>
+            <div class="modal-content" style="max-width: 600px; margin: 0 auto;">
+                <div class="file-upload" onclick="document.getElementById('file-input').click()">
+                    <input type="file" id="file-input" accept=".stl,.obj" onchange="handleFileUpload(event)">
+                    <h3>📁 Click to Upload STL/OBJ File</h3>
+                    <p>Drag and drop or click to select</p>
+                </div>
+                <div id="file-info" class="hidden">
+                    <div class="form-group">
+                        <label>File Name:</label>
+                        <input type="text" id="file-name" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>File Size:</label>
+                        <input type="text" id="file-size" readonly>
+                    </div>
+                    <div id="file-validation"></div>
+                    <div class="preview-container">
+                        <canvas id="upload-preview"></canvas>
+                    </div>
+                    <div class="customization-controls">
+                        <div class="form-group">
+                            <label>Material:</label>
+                            <select id="upload-material" onchange="calculatePrice()">
+                                <option value="pla">PLA - ₹1600/kg</option>
+                                <option value="abs">ABS - ₹2000/kg</option>
+                                <option value="resin">Resin - ₹3200/kg</option>
+                                <option value="tpu">TPU - ₹2400/kg</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Scale (%):</label>
+                            <input type="range" id="upload-scale" min="50" max="200" value="100" oninput="updateScale(this.value)">
+                            <span id="scale-value">100%</span>
+                        </div>
+                    </div>
+                        <div class="price-display">
+                        <div>Estimated Price:</div>
+                        <div class="price" id="upload-price">₹0.00</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="addToCartFromUpload()">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cart Section -->
+    <section class="section" id="cart-section" style="display: none;">
+        <div class="container">
+            <h2 class="section-title">Shopping Cart</h2>
+            <div id="cart-items"></div>
+                <div class="price-display" style="margin-top: 2rem;">
+                <div>Total:</div>
+                <div class="price" id="cart-total">₹0.00</div>
+            </div>
+            <button class="btn btn-primary" onclick="checkout()" style="width: 100%; margin-top: 1rem;">Proceed to Checkout</button>
+        </div>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section class="section" id="dashboard-section" style="display: none;">
+        <div class="container">
+            <h2 class="section-title">My Dashboard</h2>
+            <div class="dashboard">
+                <div class="sidebar">
+                    <ul class="sidebar-menu">
+                        <li><a href="#" onclick="showDashboard('orders')" class="active">My Orders</a></li>
+                        <li><a href="#" onclick="showDashboard('saved')">Saved Designs</a></li>
+                        <li><a href="#" onclick="showDashboard('profile')">Profile</a></li>
+                    </ul>
+                </div>
+                <div class="dashboard-content" id="dashboard-content">
+                    <h3>My Orders</h3>
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Product</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Total</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Section -->
+    <section class="section" id="admin-section" style="display: none;">
+        <div class="container">
+            <h2 class="section-title">Admin Dashboard</h2>
+            <div class="dashboard">
+                <div class="sidebar">
+                    <ul class="sidebar-menu">
+                        <li><a href="#" onclick="showAdmin('orders')" class="active">All Orders</a></li>
+                        <li><a href="#" onclick="showAdmin('products')">Manage Products</a></li>
+                        <li><a href="#" onclick="showAdmin('materials')">Materials</a></li>
+                        <li><a href="#" onclick="showAdmin('approvals')">Design Approvals</a></li>
+                        <li><a href="#" onclick="showAdmin('gallery')">Gallery</a></li>
+                        <li><a href="#" onclick="showAdmin('analytics')">Analytics</a></li>
+                    </ul>
+                </div>
+                <div class="dashboard-content" id="admin-content">
+                    <h3>All Orders</h3>
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Product</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Total</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-orders-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Login</h2>
+                <button class="close-btn" onclick="closeModal('login-modal')">&times;</button>
+            </div>
+            <div id="login-form">
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button class="btn btn-primary" onclick="login()" style="width: 100%;">Login</button>
+                <p style="text-align: center; margin-top: 1rem;">
+                    Don't have an account? <a href="#" onclick="showSignup()">Sign up</a>
+                </p>
+            </div>
+            <div id="signup-form" style="display: none;">
+                <div class="form-group">
+                    <label>Name:</label>
+                    <input type="text" id="signup-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="signup-email" required>
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="signup-password" required>
+                </div>
+                <button class="btn btn-primary" onclick="signup()" style="width: 100%;">Sign Up</button>
+                <p style="text-align: center; margin-top: 1rem;">
+                    Already have an account? <a href="#" onclick="showLogin()">Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Customization Modal -->
+    <div id="customize-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Customize Product</h2>
+                <button class="close-btn" onclick="closeModal('customize-modal')">&times;</button>
+            </div>
+            <div class="preview-container">
+                <canvas id="preview-canvas"></canvas>
+            </div>
+            <div class="customization-controls">
+                <div class="form-group">
+                    <label>Size Scale (%):</label>
+                    <input type="range" id="size-scale" min="50" max="200" value="100" oninput="updateCustomization()">
+                    <span id="size-value">100%</span>
+                </div>
+                <div class="form-group">
+                    <label>Color:</label>
+                    <input type="color" id="product-color" value="#6366f1" onchange="updateCustomization()">
+                </div>
+                <div class="form-group">
+                    <label>Material:</label>
+                    <select id="product-material" onchange="updateCustomization()">
+                        <option value="pla">PLA - ₹1600/kg</option>
+                        <option value="abs">ABS - ₹2000/kg</option>
+                        <option value="resin">Resin - ₹3200/kg</option>
+                        <option value="tpu">TPU - ₹2400/kg</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Text Engraving:</label>
+                    <input type="text" id="engraving-text" placeholder="Enter text to engrave" onchange="updateCustomization()">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Post-Processing:</label>
+                <select id="post-processing" onchange="updateCustomization()">
+                    <option value="none">None</option>
+                    <option value="sanding">Sanding (+₹400)</option>
+                    <option value="painting">Painting (+₹1200)</option>
+                    <option value="polishing">Polishing (+₹800)</option>
+                </select>
+            </div>
+            <div class="price-display">
+                <div>Price:</div>
+                <div class="price" id="custom-price">₹0.00</div>
+            </div>
+            <button class="btn btn-primary" onclick="addToCart()" style="width: 100%; margin-top: 1rem;">Add to Cart</button>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Checkout</h2>
+                <button class="close-btn" onclick="closeModal('checkout-modal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Shipping Address:</label>
+                <textarea id="shipping-address" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Payment Method:</label>
+                <select id="payment-method">
+                    <option value="card">Credit/Debit Card</option>
+                    <option value="upi">UPI</option>
+                    <option value="paypal">PayPal</option>
+                    <option value="stripe">Stripe</option>
+                </select>
+            </div>
+            <div id="payment-details"></div>
+            <div class="price-display">
+                <div>Total Amount:</div>
+                <div class="price" id="checkout-total">₹0.00</div>
+            </div>
+            <button class="btn btn-success" onclick="placeOrder()" style="width: 100%; margin-top: 1rem;">Place Order</button>
+        </div>
+    </div>
+
+    <script>
+        // Data Storage (using localStorage)
+        let currentUser = null;
+        let currentProduct = null;
+        let cart = [];
+        let products = [
+            { id: 1, name: 'Custom Phone Case', price: 2000, image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=300&fit=crop' },
+            { id: 2, name: 'Miniature Figurine', price: 2800, image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop' },
+            { id: 3, name: 'Jewelry Box', price: 3600, image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&h=300&fit=crop' },
+            { id: 4, name: 'Keychain', price: 1200, image: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop' },
+            { id: 5, name: 'Vase', price: 2400, image: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&h=300&fit=crop' },
+            { id: 6, name: 'Action Figure', price: 4000, image: 'https://images.unsplash.com/photo-1608889825205-eebdb9fc5806?w=400&h=300&fit=crop' }
+        ];
+        let orders = [];
+        let materials = {
+            pla: { name: 'PLA', price: 1600 },
+            abs: { name: 'ABS', price: 2000 },
+            resin: { name: 'Resin', price: 3200 },
+            tpu: { name: 'TPU', price: 2400 }
+        };
+        let gallery = [
+            { id: 1, image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=500&h=500&fit=crop', title: 'Bambu Lab A1 Printer' },
+            { id: 2, image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=500&h=500&fit=crop', title: 'Custom Miniature Figurine' },
+            { id: 3, image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=500&h=500&fit=crop', title: 'Premium Jewelry Box' },
+            { id: 4, image: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=500&h=500&fit=crop', title: 'Designer Vase Collection' },
+            { id: 5, image: 'https://images.unsplash.com/photo-1608889825205-eebdb9fc5806?w=500&h=500&fit=crop', title: 'Action Figure' },
+            { id: 6, image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&h=500&fit=crop', title: 'Custom Phone Case' },
+            { id: 7, image: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=500&h=500&fit=crop', title: 'Personalized Keychain' },
+            { id: 8, image: 'https://images.unsplash.com/photo-1602751584552-8ba73ace91d1?w=500&h=500&fit=crop', title: '3D Printed Art' }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAdmin();
+            loadData();
+            renderProducts();
+            renderGallery();
+            updateCartCount();
+            checkAuth();
+        });
+
+        // Initialize Admin Account
+        function initializeAdmin() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const adminExists = users.find(u => u.email === 'admin@jd3dstudio.com');
+            
+            if (!adminExists) {
+                const adminUser = {
+                    id: 1,
+                    name: 'Admin',
+                    email: 'admin@jd3dstudio.com',
+                    password: 'admin123',
+                    role: 'admin'
+                };
+                users.push(adminUser);
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+        }
+
+        // Data Management
+        function loadData() {
+            const savedUser = localStorage.getItem('currentUser');
+            const savedCart = localStorage.getItem('cart');
+            const savedOrders = localStorage.getItem('orders');
+            const savedProducts = localStorage.getItem('products');
+            const savedGallery = localStorage.getItem('gallery');
+
+            if (savedUser) currentUser = JSON.parse(savedUser);
+            if (savedCart) cart = JSON.parse(savedCart);
+            if (savedOrders) orders = JSON.parse(savedOrders);
+            if (savedProducts) products = JSON.parse(savedProducts);
+            if (savedGallery) gallery = JSON.parse(savedGallery);
+        }
+
+        function saveData() {
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            localStorage.setItem('cart', JSON.stringify(cart));
+            localStorage.setItem('orders', JSON.stringify(orders));
+            localStorage.setItem('products', JSON.stringify(products));
+            localStorage.setItem('gallery', JSON.stringify(gallery));
+        }
+
+        // Authentication
+        function checkAuth() {
+            if (currentUser) {
+                document.getElementById('login-btn').classList.add('hidden');
+                document.getElementById('logout-btn').classList.remove('hidden');
+                document.getElementById('user-name').textContent = currentUser.name;
+                document.getElementById('user-name').classList.remove('hidden');
+                if (currentUser.role === 'admin') {
+                    document.getElementById('admin-link').classList.remove('hidden');
+                }
+            }
+        }
+
+        function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                saveData();
+                closeModal('login-modal');
+                checkAuth();
+                alert('Login successful!');
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+
+        function signup() {
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const role = 'user'; // Only admin can assign roles, default to user
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            
+            if (users.find(u => u.email === email)) {
+                alert('Email already exists');
+                return;
+            }
+
+            const newUser = { id: Date.now(), name, email, password, role };
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+
+            currentUser = newUser;
+            saveData();
+            closeModal('login-modal');
+            checkAuth();
+            alert('Sign up successful!');
+        }
+
+        function logout() {
+            currentUser = null;
+            saveData();
+            checkAuth();
+            showSection('home');
+            alert('Logged out successfully');
+        }
+
+        function showSignup() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('signup-form').style.display = 'block';
+        }
+
+        function showLogin() {
+            document.getElementById('signup-form').style.display = 'none';
+            document.getElementById('login-form').style.display = 'block';
+        }
+
+        // Navigation
+        function showSection(section) {
+            // Hide all main content sections
+            document.querySelectorAll('[id$="-section"]').forEach(s => {
+                s.style.display = 'none';
+            });
+            
+            if (section === 'home') {
+                document.getElementById('home-section').style.display = 'block';
+                // Show process, features, gallery, and contact sections only on home page
+                // Slideshow is now inside hero section, so it shows automatically
+                document.getElementById('process-section').style.display = 'block';
+                document.getElementById('features-section').style.display = 'block';
+                document.getElementById('gallery-section').style.display = 'block';
+                document.getElementById('contact-section').style.display = 'block';
+                renderGallery();
+                initSlideshow();
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                document.getElementById(section + '-section').style.display = 'block';
+                // Hide process, gallery, and contact sections when not on home page
+                document.getElementById('process-section').style.display = 'none';
+                document.getElementById('gallery-section').style.display = 'none';
+                document.getElementById('contact-section').style.display = 'none';
+            }
+            
+            if (section === 'products') {
+                renderProducts();
+            } else if (section === 'cart') {
+                renderCart();
+            } else if (section === 'dashboard') {
+                if (!currentUser) {
+                    showModal('login-modal');
+                    return;
+                }
+                showDashboard('orders');
+            } else if (section === 'admin') {
+                if (!currentUser || currentUser.role !== 'admin') {
+                    alert('Admin access required');
+                    return;
+                }
+                showAdmin('orders');
+            }
+        }
+
+        // Products
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = products.map(product => `
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="${product.image}" alt="${product.name}" onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;font-size:3rem;\\'>📦</div>'">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price">₹${product.price}</div>
+                        <button class="btn btn-primary" onclick="customizeProduct(${product.id})">Customize</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Gallery
+        function renderGallery() {
+            const galleryGrid = document.getElementById('home-gallery');
+            if (!galleryGrid) return;
+            
+            galleryGrid.innerHTML = gallery.map(item => `
+                <div class="gallery-item">
+                    <img src="${item.image}" alt="${item.title || 'Gallery Image'}" onerror="this.src='https://via.placeholder.com/300/6366f1/ffffff?text=3D+Print'">
+                    <div class="gallery-overlay">
+                        <h4>${item.title || '3D Printed Item'}</h4>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function customizeProduct(id) {
+            if (!currentUser) {
+                showModal('login-modal');
+                return;
+            }
+
+            currentProduct = products.find(p => p.id === id);
+            showModal('customize-modal');
+            init3DPreview();
+            updateCustomization();
+        }
+
+        // 3D Preview
+        let scene, camera, renderer, controls, mesh;
+
+        function init3DPreview() {
+            const canvas = document.getElementById('preview-canvas');
+            if (!canvas) return;
+
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+
+            // Add orbit controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+
+            // Create a simple 3D object
+            const geometry = new THREE.BoxGeometry(2, 2, 2);
+            const material = new THREE.MeshStandardMaterial({ color: 0x6366f1 });
+            mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+
+            // Add lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 5, 5);
+            scene.add(directionalLight);
+
+            camera.position.z = 5;
+
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (controls) controls.update();
+            if (renderer && scene && camera) renderer.render(scene, camera);
+        }
+
+        function updateCustomization() {
+            const scale = document.getElementById('size-scale').value / 100;
+            const color = document.getElementById('product-color').value;
+            const material = document.getElementById('product-material').value;
+            const engraving = document.getElementById('engraving-text').value;
+            const postProcessing = document.getElementById('post-processing').value;
+
+            document.getElementById('size-value').textContent = document.getElementById('size-scale').value + '%';
+
+            if (mesh) {
+                mesh.scale.set(scale, scale, scale);
+                mesh.material.color.setHex(parseInt(color.replace('#', '0x')));
+            }
+
+            calculateCustomPrice(material, scale, postProcessing);
+        }
+
+        function calculateCustomPrice(material, scale, postProcessing) {
+            if (!currentProduct) return;
+
+            const basePrice = currentProduct.price;
+            const materialMultiplier = materials[material].price / 1600; // Normalize to PLA
+            const scaleMultiplier = scale;
+            let postProcessingCost = 0;
+
+            if (postProcessing === 'sanding') postProcessingCost = 400;
+            else if (postProcessing === 'painting') postProcessingCost = 1200;
+            else if (postProcessing === 'polishing') postProcessingCost = 800;
+
+            const total = (basePrice * materialMultiplier * scaleMultiplier) + postProcessingCost;
+            document.getElementById('custom-price').textContent = '₹' + total.toFixed(2);
+        }
+
+        function addToCart() {
+            if (!currentUser) {
+                closeModal('customize-modal');
+                showModal('login-modal');
+                return;
+            }
+
+            const scale = document.getElementById('size-scale').value / 100;
+            const color = document.getElementById('product-color').value;
+            const material = document.getElementById('product-material').value;
+            const engraving = document.getElementById('engraving-text').value;
+            const postProcessing = document.getElementById('post-processing').value;
+            const price = parseFloat(document.getElementById('custom-price').textContent.replace('₹', ''));
+
+            const cartItem = {
+                id: Date.now(),
+                productId: currentProduct.id,
+                productName: currentProduct.name,
+                scale,
+                color,
+                material,
+                engraving,
+                postProcessing,
+                price
+            };
+
+            cart.push(cartItem);
+            saveData();
+            updateCartCount();
+            closeModal('customize-modal');
+            alert('Added to cart!');
+        }
+
+        // File Upload
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const fileName = file.name;
+            const fileSize = (file.size / 1024).toFixed(2) + ' KB';
+            const fileExt = fileName.split('.').pop().toLowerCase();
+
+            document.getElementById('file-name').value = fileName;
+            document.getElementById('file-size').value = fileSize;
+            document.getElementById('file-info').classList.remove('hidden');
+
+            // Validate file
+            let validation = '<div class="alert alert-success">✓ File validated successfully</div>';
+            
+            if (fileExt !== 'stl' && fileExt !== 'obj') {
+                validation = '<div class="alert alert-error">✗ Invalid file type. Please upload STL or OBJ files.</div>';
+            } else if (file.size > 50 * 1024 * 1024) {
+                validation = '<div class="alert alert-error">✗ File too large. Maximum size is 50MB.</div>';
+            }
+
+            document.getElementById('file-validation').innerHTML = validation;
+
+            // Simple 3D preview (would need proper STL/OBJ loader in production)
+            initUploadPreview();
+            calculatePrice();
+        }
+
+        function initUploadPreview() {
+            const canvas = document.getElementById('upload-preview');
+            if (!canvas) return;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+
+            const geometry = new THREE.BoxGeometry(2, 2, 2);
+            const material = new THREE.MeshStandardMaterial({ color: 0x8b5cf6 });
+            const mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 5, 5);
+            scene.add(directionalLight);
+
+            camera.position.z = 5;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                mesh.rotation.x += 0.01;
+                mesh.rotation.y += 0.01;
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        function updateScale(value) {
+            document.getElementById('scale-value').textContent = value + '%';
+            calculatePrice();
+        }
+
+        function calculatePrice() {
+            const material = document.getElementById('upload-material').value;
+            const scale = document.getElementById('upload-scale').value / 100;
+            
+            // Estimate based on material and scale
+            const baseCost = materials[material].price;
+            const volume = scale * scale * scale; // Simplified volume calculation
+            const estimatedCost = baseCost * volume * 2; // Rough estimate
+
+            document.getElementById('upload-price').textContent = '₹' + estimatedCost.toFixed(2);
+        }
+
+        function addToCartFromUpload() {
+            if (!currentUser) {
+                showModal('login-modal');
+                return;
+            }
+
+            const fileName = document.getElementById('file-name').value;
+            const material = document.getElementById('upload-material').value;
+            const scale = document.getElementById('upload-scale').value / 100;
+            const price = parseFloat(document.getElementById('upload-price').textContent.replace('₹', ''));
+
+            const cartItem = {
+                id: Date.now(),
+                productId: 'upload-' + Date.now(),
+                productName: 'Custom Upload: ' + fileName,
+                scale,
+                material,
+                price,
+                isUpload: true
+            };
+
+            cart.push(cartItem);
+            saveData();
+            updateCartCount();
+            alert('Added to cart!');
+        }
+
+        // Cart
+        function renderCart() {
+            const cartItems = document.getElementById('cart-items');
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p style="text-align: center; padding: 2rem;">Your cart is empty</p>';
+                document.getElementById('cart-total').textContent = '₹0.00';
+                return;
+            }
+
+            cartItems.innerHTML = cart.map(item => `
+                <div class="product-card" style="margin-bottom: 1rem;">
+                    <div class="product-info">
+                        <div class="product-name">${item.productName}</div>
+                        <p>Material: ${materials[item.material].name}</p>
+                        <p>Scale: ${(item.scale * 100).toFixed(0)}%</p>
+                        ${item.engraving ? `<p>Engraving: ${item.engraving}</p>` : ''}
+                        <div class="product-price">₹${item.price.toFixed(2)}</div>
+                        <button class="btn btn-danger" onclick="removeFromCart(${item.id})">Remove</button>
+                    </div>
+                </div>
+            `).join('');
+
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('cart-total').textContent = '₹' + total.toFixed(2);
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            saveData();
+            updateCartCount();
+            renderCart();
+        }
+
+        function updateCartCount() {
+            document.getElementById('cart-count').textContent = cart.length;
+        }
+
+        function checkout() {
+            if (!currentUser) {
+                showModal('login-modal');
+                return;
+            }
+
+            if (cart.length === 0) {
+                alert('Your cart is empty');
+                return;
+            }
+
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('checkout-total').textContent = '₹' + total.toFixed(2);
+            showModal('checkout-modal');
+        }
+
+        function placeOrder() {
+            const address = document.getElementById('shipping-address').value;
+            const paymentMethod = document.getElementById('payment-method').value;
+
+            if (!address) {
+                alert('Please enter shipping address');
+                return;
+            }
+
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            const order = {
+                id: Date.now(),
+                userId: currentUser.id,
+                userName: currentUser.name,
+                items: [...cart],
+                total,
+                address,
+                paymentMethod,
+                status: 'pending',
+                date: new Date().toLocaleDateString()
+            };
+
+            orders.push(order);
+            cart = [];
+            saveData();
+            updateCartCount();
+            closeModal('checkout-modal');
+            alert('Order placed successfully! Order ID: ' + order.id);
+            showSection('dashboard');
+        }
+
+        // Dashboard
+        function showDashboard(tab) {
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const content = document.getElementById('dashboard-content');
+            
+            if (tab === 'orders') {
+                const userOrders = orders.filter(o => o.userId === currentUser.id);
+                content.innerHTML = `
+                    <h3>My Orders</h3>
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Product</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Total</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${userOrders.map(order => `
+                                <tr>
+                                    <td>#${order.id}</td>
+                                    <td>${order.items.length} item(s)</td>
+                                    <td>${order.date}</td>
+                                    <td><span class="status-badge status-${order.status}">${order.status}</span></td>
+                                    <td>₹${order.total.toFixed(2)}</td>
+                                    <td><button class="btn btn-outline" onclick="viewOrder(${order.id})">View</button></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } else if (tab === 'saved') {
+                content.innerHTML = '<h3>Saved Designs</h3><p>No saved designs yet.</p>';
+            } else if (tab === 'profile') {
+                content.innerHTML = `
+                    <h3>Profile</h3>
+                    <div class="form-group">
+                        <label>Name:</label>
+                        <input type="text" value="${currentUser.name}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Email:</label>
+                        <input type="email" value="${currentUser.email}" readonly>
+                    </div>
+                `;
+            }
+        }
+
+        // Admin
+        function showAdmin(tab) {
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const content = document.getElementById('admin-content');
+            
+            if (tab === 'orders') {
+                content.innerHTML = `
+                    <h3>All Orders</h3>
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Product</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Total</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${orders.map(order => `
+                                <tr>
+                                    <td>#${order.id}</td>
+                                    <td>${order.userName}</td>
+                                    <td>${order.items.length} item(s)</td>
+                                    <td>${order.date}</td>
+                                    <td>
+                                        <select onchange="updateOrderStatus(${order.id}, this.value)">
+                                            <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                            <option value="printing" ${order.status === 'printing' ? 'selected' : ''}>Printing</option>
+                                            <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
+                                            <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                                        </select>
+                                    </td>
+                                    <td>₹${order.total.toFixed(2)}</td>
+                                    <td><button class="btn btn-outline" onclick="viewOrder(${order.id})">View</button></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } else if (tab === 'products') {
+                content.innerHTML = `
+                    <h3>Manage Products</h3>
+                    <button class="btn btn-primary" onclick="addProduct()" style="margin-bottom: 1rem;">Add Product</button>
+                    <div class="products-grid">
+                        ${products.map(product => `
+                            <div class="product-card">
+                                <div class="product-image">
+                                    <img src="${product.image}" alt="${product.name}" onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;font-size:3rem;\\'>📦</div>'">
+                                </div>
+                                <div class="product-info">
+                                    <div class="product-name">${product.name}</div>
+                                    <div class="product-price">₹${product.price}</div>
+                                    <button class="btn btn-secondary" onclick="editProduct(${product.id})" style="margin-right: 0.5rem;">Edit</button>
+                                    <button class="btn btn-danger" onclick="deleteProduct(${product.id})">Delete</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (tab === 'materials') {
+                content.innerHTML = `
+                    <h3>Materials</h3>
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Material</th>
+                                <th>Price per kg</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.keys(materials).map(key => `
+                                <tr>
+                                    <td>${materials[key].name}</td>
+                                    <td>₹${materials[key].price}</td>
+                                    <td><button class="btn btn-outline" onclick="editMaterial('${key}')">Edit</button></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } else if (tab === 'approvals') {
+                const uploadOrders = orders.filter(o => o.items.some(i => i.isUpload));
+                content.innerHTML = `
+                    <h3>Design Approvals</h3>
+                    ${uploadOrders.length === 0 ? '<p>No designs pending approval</p>' : uploadOrders.map(order => `
+                        <div class="product-card" style="margin-bottom: 1rem;">
+                            <div class="product-info">
+                                <h4>Order #${order.id}</h4>
+                                <p>Customer: ${order.userName}</p>
+                                <p>Status: <span class="status-badge status-${order.status}">${order.status}</span></p>
+                                <button class="btn btn-success" onclick="approveDesign(${order.id})">Approve</button>
+                                <button class="btn btn-danger" onclick="rejectDesign(${order.id})">Reject</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+            } else if (tab === 'gallery') {
+                content.innerHTML = `
+                    <h3>Manage Gallery</h3>
+                    <p style="margin-bottom: 1rem;">Upload customer review images (JPG) to showcase your work</p>
+                    <button class="btn btn-primary" onclick="addGalleryImage()" style="margin-bottom: 1rem;">Add Gallery Image</button>
+                    <div class="admin-gallery-grid">
+                        ${gallery.map(item => `
+                            <div class="admin-gallery-item">
+                                <img src="${item.image}" alt="${item.title || 'Gallery Image'}" onerror="this.src='https://via.placeholder.com/200/6366f1/ffffff?text=Image'">
+                                <button class="delete-btn" onclick="deleteGalleryImage(${item.id})" title="Delete">×</button>
+                                <div style="padding: 0.5rem;">
+                                    <p style="font-size: 0.875rem; margin: 0;">${item.title || 'Untitled'}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (tab === 'analytics') {
+                const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+                const totalOrders = orders.length;
+                const pendingOrders = orders.filter(o => o.status === 'pending').length;
+                
+                content.innerHTML = `
+                    <h3>Analytics</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                        <div class="product-card">
+                            <div class="product-info">
+                                <h4>Total Revenue</h4>
+                                <div class="product-price">₹${totalRevenue.toFixed(2)}</div>
+                            </div>
+                        </div>
+                        <div class="product-card">
+                            <div class="product-info">
+                                <h4>Total Orders</h4>
+                                <div class="product-price">${totalOrders}</div>
+                            </div>
+                        </div>
+                        <div class="product-card">
+                            <div class="product-info">
+                                <h4>Pending Orders</h4>
+                                <div class="product-price">${pendingOrders}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function updateOrderStatus(orderId, status) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = status;
+                saveData();
+                showAdmin('orders');
+            }
+        }
+
+        function approveDesign(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = 'printing';
+                saveData();
+                alert('Design approved! Order status updated to printing.');
+                showAdmin('approvals');
+            }
+        }
+
+        function rejectDesign(orderId) {
+            if (confirm('Are you sure you want to reject this design?')) {
+                const order = orders.find(o => o.id === orderId);
+                if (order) {
+                    order.status = 'pending';
+                    saveData();
+                    alert('Design rejected. Customer will be notified.');
+                    showAdmin('approvals');
+                }
+            }
+        }
+
+        function viewOrder(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                alert(`Order #${order.id}\nCustomer: ${order.userName}\nItems: ${order.items.length}\nTotal: ₹${order.total.toFixed(2)}\nStatus: ${order.status}`);
+            }
+        }
+
+        function addProduct() {
+            showProductModal();
+        }
+
+        function showProductModal(product = null) {
+            const isEdit = product !== null;
+            const productData = product ? products.find(p => p.id === product) : null;
+            
+            const modalContent = `
+                <div class="modal active" id="product-modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>${isEdit ? 'Edit Product' : 'Add Product'}</h2>
+                            <button class="close-btn" onclick="closeModal('product-modal')">&times;</button>
+                        </div>
+                        <div class="form-group">
+                            <label>Product Name:</label>
+                            <input type="text" id="product-name" value="${productData ? productData.name : ''}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Price (₹):</label>
+                            <input type="number" id="product-price" value="${productData ? productData.price : ''}" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Image:</label>
+                            <input type="file" id="product-image-file" accept="image/jpeg,image/jpg,image/png" onchange="handleProductImageUpload(event)">
+                            <input type="text" id="product-image-url" value="${productData ? productData.image : ''}" placeholder="Or enter image URL" style="margin-top: 0.5rem;" onchange="updateImagePreview()">
+                            <div id="product-image-preview" style="margin-top: 1rem; ${productData && productData.image ? '' : 'display:none;'}">
+                                <img id="preview-img" src="${productData && productData.image ? productData.image : ''}" style="max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover;" onerror="this.style.display='none'">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveProduct(${isEdit ? product : 'null'})" style="width: 100%;">${isEdit ? 'Update Product' : 'Add Product'}</button>
+                    </div>
+                </div>
+            `;
+            
+            // Remove existing modal if any
+            const existingModal = document.getElementById('product-modal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            document.body.insertAdjacentHTML('beforeend', modalContent);
+        }
+
+        function handleProductImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.type !== 'image/jpeg' && file.type !== 'image/jpg' && file.type !== 'image/png') {
+                    alert('Please upload a JPG or PNG image');
+                    event.target.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('product-image-preview');
+                    const previewImg = document.getElementById('preview-img');
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    preview.style.display = 'block';
+                    document.getElementById('product-image-url').value = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function updateImagePreview() {
+            const url = document.getElementById('product-image-url').value;
+            const preview = document.getElementById('product-image-preview');
+            const previewImg = document.getElementById('preview-img');
+            
+            if (url) {
+                previewImg.src = url;
+                previewImg.style.display = 'block';
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        function saveProduct(productId) {
+            const name = document.getElementById('product-name').value.trim();
+            const priceInput = document.getElementById('product-price').value;
+            const imageUrl = document.getElementById('product-image-url').value.trim();
+
+            if (!name) {
+                alert('Please enter product name');
+                return;
+            }
+
+            const price = parseFloat(priceInput);
+            if (isNaN(price) || price <= 0) {
+                alert('Please enter a valid price');
+                return;
+            }
+
+            if (!imageUrl) {
+                alert('Please upload or enter an image URL');
+                return;
+            }
+
+            if (productId) {
+                // Edit existing product
+                const productIndex = products.findIndex(p => p.id === productId);
+                if (productIndex !== -1) {
+                    products[productIndex].name = name;
+                    products[productIndex].price = price;
+                    products[productIndex].image = imageUrl;
+                }
+            } else {
+                // Add new product
+                const newProduct = {
+                    id: Date.now(),
+                    name: name,
+                    price: price,
+                    image: imageUrl
+                };
+                products.push(newProduct);
+            }
+
+            saveData();
+            closeModal('product-modal');
+            showAdmin('products');
+            alert(productId ? 'Product updated successfully!' : 'Product added successfully!');
+        }
+
+        function editProduct(productId) {
+            showProductModal(productId);
+        }
+
+        function deleteProduct(productId) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                products = products.filter(p => p.id !== productId);
+                saveData();
+                showAdmin('products');
+                alert('Product deleted successfully!');
+            }
+        }
+
+        function editMaterial(materialKey) {
+            const newPriceInput = prompt(`Enter new price for ${materials[materialKey].name} (₹ per kg):`, materials[materialKey].price);
+            if (!newPriceInput) return;
+            
+            const newPrice = parseFloat(newPriceInput);
+            if (isNaN(newPrice) || newPrice <= 0) {
+                alert('Invalid price');
+                return;
+            }
+
+            materials[materialKey].price = newPrice;
+            saveData();
+            showAdmin('materials');
+            alert('Material price updated successfully!');
+        }
+
+        // Gallery Management
+        function addGalleryImage() {
+            const title = prompt('Enter image title (optional):') || 'Customer Review';
+            const imageUrl = prompt('Enter image URL (or leave empty to upload):');
+            
+            if (imageUrl) {
+                const newImage = {
+                    id: Date.now(),
+                    image: imageUrl,
+                    title: title
+                };
+                gallery.push(newImage);
+                saveData();
+                showAdmin('gallery');
+                alert('Gallery image added successfully!');
+            } else {
+                // Show upload modal
+                showGalleryUploadModal(title);
+            }
+        }
+
+        function showGalleryUploadModal(title = 'Customer Review') {
+            const modalContent = `
+                <div class="modal active" id="gallery-upload-modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Upload Gallery Image</h2>
+                            <button class="close-btn" onclick="closeModal('gallery-upload-modal')">&times;</button>
+                        </div>
+                        <div class="form-group">
+                            <label>Image Title:</label>
+                            <input type="text" id="gallery-title" value="${title}" placeholder="Enter image title">
+                        </div>
+                        <div class="form-group">
+                            <label>Upload Image (JPG):</label>
+                            <input type="file" id="gallery-image-file" accept="image/jpeg,image/jpg,image/png" onchange="handleGalleryImageUpload(event)" required>
+                            <div id="gallery-upload-preview" style="margin-top: 1rem; display: none;">
+                                <img id="gallery-preview-img" style="max-width: 300px; max-height: 300px; border-radius: 8px; object-fit: cover;">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveGalleryImage()" style="width: 100%;">Upload Image</button>
+                    </div>
+                </div>
+            `;
+            
+            const existingModal = document.getElementById('gallery-upload-modal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            document.body.insertAdjacentHTML('beforeend', modalContent);
+        }
+
+        function handleGalleryImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.type !== 'image/jpeg' && file.type !== 'image/jpg' && file.type !== 'image/png') {
+                    alert('Please upload a JPG or PNG image');
+                    event.target.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('gallery-upload-preview');
+                    const previewImg = document.getElementById('gallery-preview-img');
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveGalleryImage() {
+            const fileInput = document.getElementById('gallery-image-file');
+            const title = document.getElementById('gallery-title').value.trim() || 'Customer Review';
+            
+            if (!fileInput.files || !fileInput.files[0]) {
+                alert('Please select an image file');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            if (file.type !== 'image/jpeg' && file.type !== 'image/jpg' && file.type !== 'image/png') {
+                alert('Please upload a JPG or PNG image');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const newImage = {
+                    id: Date.now(),
+                    image: e.target.result,
+                    title: title
+                };
+                gallery.push(newImage);
+                saveData();
+                closeModal('gallery-upload-modal');
+                showAdmin('gallery');
+                alert('Gallery image uploaded successfully!');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function deleteGalleryImage(imageId) {
+            if (confirm('Are you sure you want to delete this gallery image?')) {
+                gallery = gallery.filter(item => item.id !== imageId);
+                saveData();
+                showAdmin('gallery');
+                alert('Gallery image deleted successfully!');
+            }
+        }
+
+        // Modal Functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+
+        // Slideshow Functionality
+        let currentSlide = 0;
+        let slideshowInterval;
+
+        function initSlideshow() {
+            const slides = document.querySelectorAll('.slide');
+            const dotsContainer = document.getElementById('slideshow-dots');
+            
+            if (!slides.length || !dotsContainer) return;
+
+            // Create dots
+            dotsContainer.innerHTML = '';
+            slides.forEach((_, index) => {
+                const dot = document.createElement('span');
+                dot.className = 'dot' + (index === 0 ? ' active' : '');
+                dot.onclick = () => goToSlide(index);
+                dotsContainer.appendChild(dot);
+            });
+
+            // Auto-play slideshow
+            startSlideshow();
+        }
+
+        function showSlide(index) {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.dot');
+            
+            if (slides.length === 0) return;
+
+            // Wrap around
+            if (index >= slides.length) {
+                currentSlide = 0;
+            } else if (index < 0) {
+                currentSlide = slides.length - 1;
+            } else {
+                currentSlide = index;
+            }
+
+            // Update slides
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                if (i === currentSlide) {
+                    slide.classList.add('active');
+                }
+            });
+
+            // Update dots
+            dots.forEach((dot, i) => {
+                dot.classList.remove('active');
+                if (i === currentSlide) {
+                    dot.classList.add('active');
+                }
+            });
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+            resetSlideshow();
+        }
+
+        function goToSlide(index) {
+            showSlide(index);
+            resetSlideshow();
+        }
+
+        function startSlideshow() {
+            slideshowInterval = setInterval(() => {
+                changeSlide(1);
+            }, 5000); // Change slide every 5 seconds
+        }
+
+        function resetSlideshow() {
+            clearInterval(slideshowInterval);
+            startSlideshow();
+        }
+
+        // Initialize slideshow on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initSlideshow();
+        });
+    </script>
+</body>
+</html>
